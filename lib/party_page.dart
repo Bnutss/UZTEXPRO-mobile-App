@@ -3,14 +3,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'batch_data_page.dart';
 
-class IncomePage extends StatefulWidget {
-  const IncomePage({Key? key}) : super(key: key);
+class PartyPage extends StatefulWidget {
+  const PartyPage({Key? key}) : super(key: key);
 
   @override
-  _IncomePageState createState() => _IncomePageState();
+  _PartyPageState createState() => _PartyPageState();
 }
 
-class _IncomePageState extends State<IncomePage> {
+class _PartyPageState extends State<PartyPage> {
   final TextEditingController _qrCodeController = TextEditingController();
   final FocusNode _qrFocusNode = FocusNode();
 
@@ -20,29 +20,37 @@ class _IncomePageState extends State<IncomePage> {
 
     try {
       final response = await http.get(url);
+      final Map<String, dynamic> responseData = jsonDecode(utf8.decode(response.bodyBytes));
 
-      if (response.statusCode == 200) {
-        final List data = jsonDecode(response.body);
-        final int? cellId = data.isNotEmpty ? data.first['cells'][0] as int? : null;
+      if (response.statusCode == 200 || response.statusCode == 404) {
+        final List<dynamic> batches = responseData['batches'] ?? [];
+        final int? cellId = responseData['cell_id'] ?? responseData['cell']?['id'] as int?;
+        final String rackName = responseData['cell']?['rack_shelf']?['shelf']?['code'] ?? 'N/A';
+        final String shelfName = responseData['cell']?['rack_shelf']?['code'] ?? 'N/A';
+        final String cellName = responseData['cell']?['code'] ?? 'N/A';
+        final String displayLocation = "$rackName Полка $shelfName Ячейка $cellName";
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BatchDataPage(
-              batchData: data,
-              cellId: cellId,
+        if (cellId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BatchDataPage(
+                batchData: batches,
+                cellId: cellId,
+                rackName: displayLocation,
+                shelfName: '',
+                cellName: '',
+              ),
             ),
-          ),
-        );
-
-        if (data.isEmpty) {
-          _showSnackbar('Данные не найдены, но можно добавить новые', Colors.grey);
+          );
+        } else {
+          _showSnackbar('Ячейка не найдена.', Colors.red);
         }
       } else {
-        _showSnackbar('Стеллаж не определен', Colors.red);
+        _showSnackbar('Ошибка при загрузке данных.', Colors.red);
       }
     } catch (e) {
-      _showSnackbar('Ошибка сети', Colors.red);
+      _showSnackbar('Ошибка сети.', Colors.red);
     } finally {
       _qrCodeController.clear();
       _qrFocusNode.requestFocus();
@@ -69,8 +77,9 @@ class _IncomePageState extends State<IncomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Партии', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -79,12 +88,6 @@ class _IncomePageState extends State<IncomePage> {
               end: Alignment.bottomRight,
             ),
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
         ),
       ),
       body: Container(

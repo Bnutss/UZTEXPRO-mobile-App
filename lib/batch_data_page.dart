@@ -5,8 +5,18 @@ import 'dart:convert';
 class BatchDataPage extends StatefulWidget {
   final List batchData;
   final int? cellId;
+  final String rackName;
+  final String shelfName;
+  final String cellName;
 
-  const BatchDataPage({Key? key, required this.batchData, this.cellId}) : super(key: key);
+  const BatchDataPage({
+    Key? key,
+    required this.batchData,
+    this.cellId,
+    required this.rackName,
+    required this.shelfName,
+    required this.cellName,
+  }) : super(key: key);
 
   @override
   _BatchDataPageState createState() => _BatchDataPageState();
@@ -35,21 +45,13 @@ class _BatchDataPageState extends State<BatchDataPage> {
             _batchData = jsonDecode(utf8.decode(response.bodyBytes));
           });
         } catch (e) {
-          print("Ошибка декодирования JSON: $e");
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ошибка декодирования данных')),
-          );
+          _showSnackbar('Ошибка декодирования данных', Colors.red, Icons.error);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ошибка загрузки данных')),
-        );
+        _showSnackbar('Ошибка загрузки данных', Colors.orange, Icons.warning);
       }
     } catch (e) {
-      print("Ошибка сети: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ошибка сети')),
-      );
+      _showSnackbar('Ошибка сети', Colors.red, Icons.error);
     }
   }
 
@@ -64,20 +66,29 @@ class _BatchDataPageState extends State<BatchDataPage> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Партия успешно откреплена')),
-        );
+        _showSnackbar('Партия успешно откреплена', Colors.green, Icons.check_circle);
         _fetchBatchData();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ошибка при откреплении партии')),
-        );
+        _showSnackbar('Ошибка при откреплении партии', Colors.red, Icons.error);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ошибка сети')),
-      );
+      _showSnackbar('Ошибка сети', Colors.red, Icons.error);
     }
+  }
+
+  void _showSnackbar(String message, Color color, IconData icon) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 10),
+            Text(message),
+          ],
+        ),
+        backgroundColor: color,
+      ),
+    );
   }
 
   void _navigateToAddBatch(BuildContext context) async {
@@ -95,7 +106,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
             right: 16,
             bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-          child: AddBatchForm(cellId: widget.cellId),
+          child: AddBatchForm(cellId: widget.cellId, showSnackbar: _showSnackbar),
         );
       },
     );
@@ -109,7 +120,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ячейка'),
+        title: Text('${widget.rackName} / ${widget.shelfName} / ${widget.cellName}'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -189,14 +200,13 @@ class AddBatchForm extends StatelessWidget {
   final TextEditingController rollsCountController = TextEditingController();
   final TextEditingController rollsWeightController = TextEditingController();
   final int? cellId;
+  final Function(String, Color, IconData) showSnackbar;
 
-  AddBatchForm({Key? key, this.cellId}) : super(key: key);
+  AddBatchForm({Key? key, this.cellId, required this.showSnackbar}) : super(key: key);
 
   Future<void> _addBatch(BuildContext context) async {
     if (cellId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Не удалось добавить партию: идентификатор ячейки отсутствует')),
-      );
+      showSnackbar('Не удалось добавить партию: идентификатор ячейки отсутствует', Colors.red, Icons.error);
       return;
     }
 
@@ -218,14 +228,10 @@ class AddBatchForm extends StatelessWidget {
       if (response.statusCode == 201) {
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ошибка при добавлении партии')),
-        );
+        showSnackbar('Ошибка при добавлении партии', Colors.orange, Icons.warning);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ошибка сети')),
-      );
+      showSnackbar('Ошибка сети', Colors.red, Icons.error);
     }
   }
 

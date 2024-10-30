@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'income_page.dart';
+import 'party_page.dart';
 import 'racks_page.dart';
 
 class MenuPage extends StatelessWidget {
@@ -42,7 +42,7 @@ class MenuPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const IncomePage()),
+                    MaterialPageRoute(builder: (context) => const PartyPage()),
                   );
                 },
               ),
