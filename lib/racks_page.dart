@@ -33,8 +33,8 @@ class _RacksPageState extends State<RacksPage> {
 
     try {
       final url = query == null || query.isEmpty
-          ? 'http://127.0.0.1:8000/warehouse/api/racks/'
-          : 'http://127.0.0.1:8000/warehouse/api/search/?query=$query';
+          ? 'http://192.168.11.14:8000/warehouse/api/racks/'
+          : 'http://192.168.11.14:8000/warehouse/api/search/?query=$query';
 
       final response = await http.get(Uri.parse(url));
 

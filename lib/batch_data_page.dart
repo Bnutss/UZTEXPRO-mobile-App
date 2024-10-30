@@ -34,19 +34,15 @@ class _BatchDataPageState extends State<BatchDataPage> {
   Future<void> _fetchBatchData() async {
     if (widget.cellId == null) return;
 
-    final url = Uri.parse('http://127.0.0.1:8000/warehouse/batches/by-cell/${widget.cellId}/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/by-cell/${widget.cellId}/');
 
     try {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        try {
-          setState(() {
-            _batchData = jsonDecode(utf8.decode(response.bodyBytes));
-          });
-        } catch (e) {
-          _showSnackbar('Ошибка декодирования данных', Colors.red, Icons.error);
-        }
+        setState(() {
+          _batchData = jsonDecode(utf8.decode(response.bodyBytes));
+        });
       } else {
         _showSnackbar('Ошибка загрузки данных', Colors.orange, Icons.warning);
       }
@@ -56,7 +52,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
   }
 
   Future<void> _detachBatch(int batchId) async {
-    final url = Uri.parse('http://127.0.0.1:8000/warehouse/batches/detach/$batchId/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/detach/$batchId/');
 
     try {
       final response = await http.post(
@@ -194,23 +190,29 @@ class _BatchDataPageState extends State<BatchDataPage> {
   }
 }
 
-class AddBatchForm extends StatelessWidget {
+class AddBatchForm extends StatefulWidget {
+  final int? cellId;
+  final Function(String, Color, IconData) showSnackbar;
+
+  const AddBatchForm({Key? key, this.cellId, required this.showSnackbar}) : super(key: key);
+
+  @override
+  _AddBatchFormState createState() => _AddBatchFormState();
+}
+
+class _AddBatchFormState extends State<AddBatchForm> {
   final TextEditingController batchController = TextEditingController();
   final TextEditingController lotController = TextEditingController();
   final TextEditingController rollsCountController = TextEditingController();
   final TextEditingController rollsWeightController = TextEditingController();
-  final int? cellId;
-  final Function(String, Color, IconData) showSnackbar;
-
-  AddBatchForm({Key? key, this.cellId, required this.showSnackbar}) : super(key: key);
 
   Future<void> _addBatch(BuildContext context) async {
-    if (cellId == null) {
-      showSnackbar('Не удалось добавить партию: идентификатор ячейки отсутствует', Colors.red, Icons.error);
+    if (widget.cellId == null) {
+      widget.showSnackbar('Не удалось добавить партию: идентификатор ячейки отсутствует', Colors.red, Icons.error);
       return;
     }
 
-    final url = Uri.parse('http://127.0.0.1:8000/warehouse/batches/create/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/create/');
 
     try {
       final response = await http.post(
@@ -221,17 +223,17 @@ class AddBatchForm extends StatelessWidget {
           "lot": lotController.text,
           "rolls_count": double.tryParse(rollsCountController.text) ?? 0.0,
           "rolls_weight": double.tryParse(rollsWeightController.text) ?? 0.0,
-          "cells": [cellId],
+          "cells": [widget.cellId],
         }),
       );
 
       if (response.statusCode == 201) {
         Navigator.pop(context, true);
       } else {
-        showSnackbar('Ошибка при добавлении партии', Colors.orange, Icons.warning);
+        widget.showSnackbar('Ошибка при добавлении партии', Colors.orange, Icons.warning);
       }
     } catch (e) {
-      showSnackbar('Ошибка сети', Colors.red, Icons.error);
+      widget.showSnackbar('Ошибка сети', Colors.red, Icons.error);
     }
   }
 

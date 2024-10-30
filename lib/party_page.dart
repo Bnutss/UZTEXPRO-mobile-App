@@ -16,7 +16,7 @@ class _PartyPageState extends State<PartyPage> {
 
   Future<void> _fetchCellData() async {
     final qrDataIdentifier = _qrCodeController.text;
-    final url = Uri.parse('http://127.0.0.1:8000/warehouse/batches/by-qr/$qrDataIdentifier/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/by-qr/$qrDataIdentifier/');
 
     try {
       final response = await http.get(url);
