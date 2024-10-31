@@ -33,7 +33,7 @@ class _RequestsPageState extends State<RequestsPage> {
   }
 
   Future<Map<String, List<UserRequest>>> fetchUserRequests() async {
-    final response = await http.get(Uri.parse('http://192.168.11.14:8000/warehouse/user_requests/'));
+    final response = await http.get(Uri.parse('http://192.168.11.14:8000/warehouse_temp/user_requests/'));
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);

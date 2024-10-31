@@ -34,14 +34,13 @@ class _BatchDataPageState extends State<BatchDataPage> {
   Future<void> _fetchBatchData() async {
     if (widget.cellId == null) return;
 
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/by-cell/${widget.cellId}/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/by-cell/${widget.cellId}/');
 
     try {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         setState(() {
-          // Фильтрация данных, чтобы исключить открепленные партии
           _batchData = jsonDecode(utf8.decode(response.bodyBytes))
               .where((batch) => batch['is_unlinked'] == false)
               .toList();
@@ -55,7 +54,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
   }
 
   Future<void> _detachBatch(int batchId) async {
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/detach/$batchId/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/detach/$batchId/');
 
     try {
       final response = await http.post(
@@ -66,7 +65,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
 
       if (response.statusCode == 200) {
         _showSnackbar('Партия успешно откреплена', Colors.green, Icons.check_circle);
-        _fetchBatchData(); // Обновление данных после открепления партии
+        _fetchBatchData();
       } else {
         _showSnackbar('Ошибка при откреплении партии', Colors.red, Icons.error);
       }
@@ -111,7 +110,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
     );
 
     if (result == true) {
-      _fetchBatchData(); // Обновление данных после добавления партии
+      _fetchBatchData();
     }
   }
 
@@ -215,7 +214,7 @@ class _AddBatchFormState extends State<AddBatchForm> {
       return;
     }
 
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/create/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/create/');
 
     try {
       final response = await http.post(

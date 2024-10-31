@@ -12,7 +12,11 @@ class MenuPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'UZTEXPRO',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
         centerTitle: true,
         flexibleSpace: Container(
@@ -47,7 +51,7 @@ class MenuPage extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               _buildGradientButton(
                 icon: Icons.storage,
                 text: 'Стеллажи',
@@ -58,7 +62,7 @@ class MenuPage extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               _buildGradientButton(
                 icon: Icons.request_page,
                 text: 'Запросы',
@@ -80,34 +84,34 @@ class MenuPage extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(25),
         ),
-        elevation: 8,
-        shadowColor: Colors.black38,
+        elevation: 10,
+        shadowColor: Colors.black54,
         backgroundColor: Colors.transparent,
       ),
       child: Ink(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Colors.black38, Colors.grey],
+            colors: [Colors.grey, Colors.black38],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(25),
         ),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 250, minHeight: 45),
+          constraints: const BoxConstraints(maxWidth: 280, minHeight: 50),
           alignment: Alignment.center,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
+              Icon(icon, color: Colors.white, size: 24),
+              const SizedBox(width: 12),
               Text(
                 text,
-                style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),

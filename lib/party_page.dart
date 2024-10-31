@@ -24,7 +24,7 @@ class _PartyPageState extends State<PartyPage> {
 
   Future<void> _fetchCellData() async {
     final qrDataIdentifier = _qrCodeController.text;
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse/batches/by-qr/$qrDataIdentifier/');
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/by-qr/$qrDataIdentifier/');
 
     try {
       final response = await http.get(url);
@@ -83,30 +83,36 @@ class _PartyPageState extends State<PartyPage> {
   void _openQRScanner() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        content: SizedBox(
-          width: 300,
-          height: 300,
-          child: MobileScanner(
-            onDetect: (barcodeCapture) {
-              final String? code = barcodeCapture.barcodes.first.rawValue;
-              if (code != null) {
-                setState(() {
-                  _qrCodeController.text = code;
-                });
-                _fetchCellData();
-                Navigator.pop(context); // Закрытие диалога после сканирования
-              }
-            },
-          ),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Stack(
+          children: [
+            SizedBox(
+              width: 300,
+              height: 300,
+              child: MobileScanner(
+                onDetect: (barcodeCapture) {
+                  final String? code = barcodeCapture.barcodes.first.rawValue;
+                  if (code != null) {
+                    setState(() {
+                      _qrCodeController.text = code;
+                    });
+                    _fetchCellData();
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Colors.red),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Закрыть"),
-          ),
-        ],
       ),
     );
   }
