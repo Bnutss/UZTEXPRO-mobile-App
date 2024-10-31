@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'party_page.dart';
 import 'racks_page.dart';
+import 'requests_page.dart';
 
 class MenuPage extends StatelessWidget {
   const MenuPage({Key? key}) : super(key: key);
@@ -54,6 +55,17 @@ class MenuPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const RacksPage()),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              _buildGradientButton(
+                icon: Icons.request_page,
+                text: 'Запросы',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RequestsPage()),
                   );
                 },
               ),

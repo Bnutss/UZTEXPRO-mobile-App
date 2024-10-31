@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'batch_data_page.dart';
 
 class PartyPage extends StatefulWidget {
@@ -13,6 +14,13 @@ class PartyPage extends StatefulWidget {
 class _PartyPageState extends State<PartyPage> {
   final TextEditingController _qrCodeController = TextEditingController();
   final FocusNode _qrFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _qrCodeController.dispose();
+    _qrFocusNode.dispose();
+    super.dispose();
+  }
 
   Future<void> _fetchCellData() async {
     final qrDataIdentifier = _qrCodeController.text;
@@ -72,14 +80,43 @@ class _PartyPageState extends State<PartyPage> {
     );
   }
 
+  void _openQRScanner() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: SizedBox(
+          width: 300,
+          height: 300,
+          child: MobileScanner(
+            onDetect: (barcodeCapture) {
+              final String? code = barcodeCapture.barcodes.first.rawValue;
+              if (code != null) {
+                setState(() {
+                  _qrCodeController.text = code;
+                });
+                _fetchCellData();
+                Navigator.pop(context); // Закрытие диалога после сканирования
+              }
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Закрыть"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Партии', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -103,11 +140,26 @@ class _PartyPageState extends State<PartyPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.qr_code_scanner, size: 100, color: Colors.blueAccent),
+              GestureDetector(
+                onTap: _openQRScanner,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
               const Text(
-                'Отсканируйте QR-Код',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black54),
+                'Сканируйте QR-код или введите вручную',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black54),
               ),
               const SizedBox(height: 20),
               TextField(
@@ -126,12 +178,5 @@ class _PartyPageState extends State<PartyPage> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _qrCodeController.dispose();
-    _qrFocusNode.dispose();
-    super.dispose();
   }
 }

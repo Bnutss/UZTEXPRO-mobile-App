@@ -28,7 +28,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
   @override
   void initState() {
     super.initState();
-    _batchData = widget.batchData;
+    _batchData = widget.batchData.where((batch) => batch['is_unlinked'] == false).toList();
   }
 
   Future<void> _fetchBatchData() async {
@@ -41,7 +41,10 @@ class _BatchDataPageState extends State<BatchDataPage> {
 
       if (response.statusCode == 200) {
         setState(() {
-          _batchData = jsonDecode(utf8.decode(response.bodyBytes));
+          // Фильтрация данных, чтобы исключить открепленные партии
+          _batchData = jsonDecode(utf8.decode(response.bodyBytes))
+              .where((batch) => batch['is_unlinked'] == false)
+              .toList();
         });
       } else {
         _showSnackbar('Ошибка загрузки данных', Colors.orange, Icons.warning);
@@ -63,7 +66,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
 
       if (response.statusCode == 200) {
         _showSnackbar('Партия успешно откреплена', Colors.green, Icons.check_circle);
-        _fetchBatchData();
+        _fetchBatchData(); // Обновление данных после открепления партии
       } else {
         _showSnackbar('Ошибка при откреплении партии', Colors.red, Icons.error);
       }
@@ -108,7 +111,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
     );
 
     if (result == true) {
-      _fetchBatchData();
+      _fetchBatchData(); // Обновление данных после добавления партии
     }
   }
 
