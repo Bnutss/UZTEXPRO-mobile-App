@@ -34,7 +34,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
   Future<void> _fetchBatchData() async {
     if (widget.cellId == null) return;
 
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/by-cell/${widget.cellId}/');
+    final url = Uri.parse('https://uztex.pro/api/v1/warehouse_temp/batches/by-cell/${widget.cellId}/');
 
     try {
       final response = await http.get(url);
@@ -54,7 +54,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
   }
 
   Future<void> _detachBatch(int batchId) async {
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/detach/$batchId/');
+    final url = Uri.parse('https://uztex.pro/api/v1/warehouse_temp/batches/detach/$batchId/');
 
     try {
       final response = await http.post(
@@ -77,7 +77,7 @@ class _BatchDataPageState extends State<BatchDataPage> {
   }
 
   Future<void> _detachBatchPartially(int batchId, double rollsCount, double rollsWeight) async {
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/detach/$batchId/');
+    final url = Uri.parse('https://uztex.pro/api/v1/warehouse_temp/batches/detach/$batchId/');
 
     try {
       final response = await http.post(
@@ -363,7 +363,7 @@ class _AddBatchFormState extends State<AddBatchForm> {
       return;
     }
 
-    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/create/');
+    final url = Uri.parse('https://uztex.pro/api/v1/warehouse_temp/batches/create/');
 
     try {
       final response = await http.post(

@@ -33,8 +33,8 @@ class _RacksPageState extends State<RacksPage> {
 
     try {
       final url = query == null || query.isEmpty
-          ? 'http://192.168.11.14:8000/warehouse_temp/api/racks/'
-          : 'http://192.168.11.14:8000/warehouse_temp/api/search/?query=$query';
+          ? 'https://uztex.pro/api/v1/warehouse_temp/api/racks/'
+          : 'https://uztex.pro/api/v1/warehouse_temp/api/search/?query=$query';
 
       final response = await http.get(Uri.parse(url));
 

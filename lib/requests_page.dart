@@ -29,8 +29,8 @@ class UserRequest {
     return UserRequest(
       batch: json['batch'].toString(),
       createdAt: json['created_at'],
-      requestedRollsCount: json['requested_rolls_count']?.toDouble() ?? 0.0,
-      requestedRollsWeight: json['requested_rolls_weight']?.toDouble() ?? 0.0,
+      requestedRollsCount: (json['requested_rolls_count'] as num).toDouble(),
+      requestedRollsWeight: (json['requested_rolls_weight'] as num).toDouble(),
       rack: json['rack'],
       shelf: json['shelf'],
       cell: json['cell'],
@@ -58,7 +58,7 @@ class _RequestsPageState extends State<RequestsPage> {
 
   Future<Map<String, dynamic>> fetchUserRequests() async {
     final response = await http.get(
-        Uri.parse('http://192.168.11.14:8000/warehouse_temp/user_requests/'));
+        Uri.parse('https://uztex.pro/api/v1/warehouse_temp/user_requests/'));
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
@@ -69,8 +69,8 @@ class _RequestsPageState extends State<RequestsPage> {
       return {
         "active": {
           "batches": activeBatches,
-          "total_rolls": jsonResponse['active']['total_rolls'],
-          "total_weight": jsonResponse['active']['total_weight'],
+          "total_rolls": (jsonResponse['active']['total_rolls'] as num).toDouble(),
+          "total_weight": (jsonResponse['active']['total_weight'] as num).toDouble(),
         },
         "partially_unlinked": (jsonResponse['partially_unlinked']['batches'] as List)
             .map((data) => UserRequest.fromJson(data))
@@ -93,13 +93,23 @@ class _RequestsPageState extends State<RequestsPage> {
 
   Future<void> _sendData() async {
     final response = await http.get(
-      Uri.parse('http://192.168.11.14:8000/warehouse_temp/user-requests/pdf/'),
+      Uri.parse('https://uztex.pro/api/v1/warehouse_temp/user-requests/pdf/'),
     );
 
     if (response.statusCode == 200) {
-      print("Data sent successfully.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Данные успешно отправлены'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } else {
-      print("Failed to send data.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ошибка при отправке данных'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
