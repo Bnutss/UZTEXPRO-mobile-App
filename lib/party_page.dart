@@ -36,7 +36,7 @@ class _PartyPageState extends State<PartyPage> {
         final String rackName = responseData['cell']?['rack_shelf']?['shelf']?['code'] ?? 'N/A';
         final String shelfName = responseData['cell']?['rack_shelf']?['code'] ?? 'N/A';
         final String cellName = responseData['cell']?['code'] ?? 'N/A';
-        final String displayLocation = "$rackName Полка $shelfName Ячейка $cellName";
+        final String displayLocation = "Стеллаж - $rackName - Полка - $shelfName - Ячейка - $cellName";
 
         if (cellId != null) {
           Navigator.push(

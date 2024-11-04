@@ -65,9 +65,36 @@ class _BatchDataPageState extends State<BatchDataPage> {
 
       if (response.statusCode == 200) {
         _showSnackbar('Партия успешно откреплена', Colors.green, Icons.check_circle);
-        _fetchBatchData();
+        setState(() {
+          _batchData.removeWhere((batch) => batch['id'] == batchId);
+        });
       } else {
         _showSnackbar('Ошибка при откреплении партии', Colors.red, Icons.error);
+      }
+    } catch (e) {
+      _showSnackbar('Ошибка сети', Colors.red, Icons.error);
+    }
+  }
+
+  Future<void> _detachBatchPartially(int batchId, double rollsCount, double rollsWeight) async {
+    final url = Uri.parse('http://192.168.11.14:8000/warehouse_temp/batches/detach/$batchId/');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+        body: jsonEncode({
+          "cell_id": widget.cellId,
+          "rolls_count": rollsCount,
+          "rolls_weight": rollsWeight,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        _showSnackbar('Партия успешно частично откреплена', Colors.green, Icons.check_circle);
+        _fetchBatchData();
+      } else {
+        _showSnackbar('Ошибка при частичном откреплении партии', Colors.red, Icons.error);
       }
     } catch (e) {
       _showSnackbar('Ошибка сети', Colors.red, Icons.error);
@@ -89,8 +116,8 @@ class _BatchDataPageState extends State<BatchDataPage> {
     );
   }
 
-  void _navigateToAddBatch(BuildContext context) async {
-    final result = await showModalBottomSheet<bool>(
+  void _showSendModal(BuildContext context, int batchId) async {
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -104,21 +131,22 @@ class _BatchDataPageState extends State<BatchDataPage> {
             right: 16,
             bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-          child: AddBatchForm(cellId: widget.cellId, showSnackbar: _showSnackbar),
+          child: SendBatchForm(
+            batchId: batchId,
+            onSend: (rollsCount, rollsWeight) {
+              _detachBatchPartially(batchId, rollsCount, rollsWeight);
+            },
+          ),
         );
       },
     );
-
-    if (result == true) {
-      _fetchBatchData();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.rackName} / ${widget.shelfName} / ${widget.cellName}'),
+        title: Text('${widget.rackName} ${widget.shelfName} ${widget.cellName}'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -177,6 +205,11 @@ class _BatchDataPageState extends State<BatchDataPage> {
                     ),
                   ],
                 ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.send, color: Colors.orange),
+                  onPressed: () => _showSendModal(context, batch['id']),
+                  tooltip: 'Частично открепить партию',
+                ),
               ),
             ),
           );
@@ -187,6 +220,122 @@ class _BatchDataPageState extends State<BatchDataPage> {
         backgroundColor: Colors.orange,
         child: const Icon(Icons.add),
         tooltip: 'Добавить партию',
+      ),
+    );
+  }
+
+  void _navigateToAddBatch(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 16,
+            right: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: AddBatchForm(
+            cellId: widget.cellId,
+            showSnackbar: _showSnackbar,
+          ),
+        );
+      },
+    );
+
+    if (result == true) {
+      _fetchBatchData();
+    }
+  }
+}
+
+class SendBatchForm extends StatefulWidget {
+  final int batchId;
+  final Function(double rollsCount, double rollsWeight) onSend;
+
+  const SendBatchForm({Key? key, required this.batchId, required this.onSend}) : super(key: key);
+
+  @override
+  _SendBatchFormState createState() => _SendBatchFormState();
+}
+
+class _SendBatchFormState extends State<SendBatchForm> {
+  final TextEditingController rollsController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
+
+  void _sendBatch() {
+    final rollsCount = double.tryParse(rollsController.text) ?? 0.0;
+    final weight = double.tryParse(weightController.text) ?? 0.0;
+    widget.onSend(rollsCount, weight);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Отправить партию',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+        ),
+        const SizedBox(height: 15),
+        _buildTextField(
+          controller: rollsController,
+          label: 'Количество рулонов',
+          icon: Icons.stacked_bar_chart,
+          inputType: TextInputType.number,
+        ),
+        const SizedBox(height: 10),
+        _buildTextField(
+          controller: weightController,
+          label: 'Вес рулонов (кг)',
+          icon: Icons.line_weight,
+          inputType: TextInputType.number,
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton.icon(
+          onPressed: _sendBatch,
+          icon: const Icon(Icons.send, color: Colors.white),
+          label: const Text(
+            'Отправить',
+            style: TextStyle(color: Colors.white),
+          ),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+            backgroundColor: Colors.deepPurpleAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType inputType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: inputType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.orange),
+        filled: true,
+        fillColor: Colors.grey[200],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
       ),
     );
   }
@@ -321,4 +470,3 @@ class _AddBatchFormState extends State<AddBatchForm> {
     );
   }
 }
-//
