@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 class UserRequest {
   final String batch;
   final String createdAt;
-  final double requestedRollsCount;
   final double requestedRollsWeight;
   final String rack;
   final String shelf;
@@ -16,7 +15,6 @@ class UserRequest {
   UserRequest({
     required this.batch,
     required this.createdAt,
-    required this.requestedRollsCount,
     required this.requestedRollsWeight,
     required this.rack,
     required this.shelf,
@@ -27,13 +25,12 @@ class UserRequest {
 
   factory UserRequest.fromJson(Map<String, dynamic> json) {
     return UserRequest(
-      batch: json['batch'].toString(),
-      createdAt: json['created_at'],
-      requestedRollsCount: (json['requested_rolls_count'] as num).toDouble(),
-      requestedRollsWeight: (json['requested_rolls_weight'] as num).toDouble(),
-      rack: json['rack'],
-      shelf: json['shelf'],
-      cell: json['cell'],
+      batch: json['batch']?.toString() ?? '',
+      createdAt: json['created_at']?.toString() ?? '',
+      requestedRollsWeight: (json['requested_rolls_weight'] as num?)?.toDouble() ?? 0.0,
+      rack: json['rack']?.toString() ?? '',
+      shelf: json['shelf']?.toString() ?? '',
+      cell: json['cell']?.toString() ?? '',
       isUnlinked: json['is_unlinked'] ?? false,
       isPartiallyUnlinked: json['is_partially_unlinked'] ?? false,
     );
@@ -69,8 +66,7 @@ class _RequestsPageState extends State<RequestsPage> {
       return {
         "active": {
           "batches": activeBatches,
-          "total_rolls": (jsonResponse['active']['total_rolls'] as num).toDouble(),
-          "total_weight": (jsonResponse['active']['total_weight'] as num).toDouble(),
+          "total_weight": (jsonResponse['active']['total_weight'] as num?)?.toDouble() ?? 0.0,
         },
         "partially_unlinked": (jsonResponse['partially_unlinked']['batches'] as List)
             .map((data) => UserRequest.fromJson(data))
@@ -125,69 +121,63 @@ class _RequestsPageState extends State<RequestsPage> {
               color: Colors.grey.shade300, blurRadius: 6, offset: Offset(0, 4))
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Text(
-              batch.batch,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              overflow: TextOverflow.ellipsis,
+      constraints: const BoxConstraints(maxHeight: 150),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Text(
+                batch.batch,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          const Divider(),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.inventory, color: Colors.orange, size: 12),
-                  const SizedBox(width: 4),
-                  Text('Рулоны: ${batch.requestedRollsCount}',
-                      style: const TextStyle(fontSize: 10)),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.line_weight, color: Colors.green, size: 12),
-                  const SizedBox(width: 4),
-                  Text('Вес: ${batch.requestedRollsWeight} кг',
-                      style: const TextStyle(fontSize: 10)),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.warehouse, color: Colors.purple, size: 12),
-                  const SizedBox(width: 4),
-                  Text('Стеллаж: ${batch.rack}',
-                      style: const TextStyle(fontSize: 10)),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.shelves, color: Colors.teal, size: 12),
-                  const SizedBox(width: 4),
-                  Text('Полка: ${batch.shelf}',
-                      style: const TextStyle(fontSize: 10)),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.grid_view, color: Colors.deepOrange, size: 12),
-                  const SizedBox(width: 4),
-                  Text('Ячейка: ${batch.cell}',
-                      style: const TextStyle(fontSize: 10)),
-                ],
-              ),
-            ],
-          ),
-        ],
+            const Divider(),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.line_weight, color: Colors.green, size: 12),
+                    const SizedBox(width: 4),
+                    Text('Вес: ${batch.requestedRollsWeight} кг',
+                        style: const TextStyle(fontSize: 10)),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.warehouse, color: Colors.purple, size: 12),
+                    const SizedBox(width: 4),
+                    Text('Стеллаж: ${batch.rack}',
+                        style: const TextStyle(fontSize: 10)),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shelves, color: Colors.teal, size: 12),
+                    const SizedBox(width: 4),
+                    Text('Полка: ${batch.shelf}',
+                        style: const TextStyle(fontSize: 10)),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.grid_view, color: Colors.deepOrange, size: 12),
+                    const SizedBox(width: 4),
+                    Text('Ячейка: ${batch.cell}',
+                        style: const TextStyle(fontSize: 10)),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -204,41 +194,35 @@ class _RequestsPageState extends State<RequestsPage> {
               color: Colors.grey.shade300, blurRadius: 6, offset: Offset(0, 4))
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Text(
-              batch.batch,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              overflow: TextOverflow.ellipsis,
+      constraints: const BoxConstraints(maxHeight: 100),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Text(
+                batch.batch,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          const Divider(),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.inventory, color: Colors.orange, size: 12),
-              const SizedBox(width: 4),
-              Text('Рулоны: ${batch.requestedRollsCount}',
-                  style: const TextStyle(fontSize: 10)),
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.line_weight, color: Colors.green, size: 12),
-              const SizedBox(width: 4),
-              Text('Вес: ${batch.requestedRollsWeight} кг',
-                  style: const TextStyle(fontSize: 10)),
-            ],
-          ),
-        ],
+            const Divider(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.line_weight, color: Colors.green, size: 12),
+                const SizedBox(width: 4),
+                Text('Вес: ${batch.requestedRollsWeight} кг',
+                    style: const TextStyle(fontSize: 10)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget buildSummary(double totalRolls, double totalWeight) {
+  Widget buildSummary(double totalWeight) {
     return Container(
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(top: 10),
@@ -262,7 +246,7 @@ class _RequestsPageState extends State<RequestsPage> {
           ),
           const SizedBox(height: 5),
           Text(
-            'Рулоны: $totalRolls, Вес: $totalWeight кг',
+            'Вес: $totalWeight кг',
             style: const TextStyle(fontSize: 12, color: Colors.black54),
           ),
         ],
@@ -321,7 +305,6 @@ class _RequestsPageState extends State<RequestsPage> {
                 return const Center(child: Text('Нет данных'));
               } else {
                 final activeBatches = snapshot.data!['active']["batches"];
-                final activeTotalRolls = snapshot.data!['active']['total_rolls'];
                 final activeTotalWeight = snapshot.data!['active']['total_weight'];
                 final partiallyUnlinkedBatches = snapshot.data!['partially_unlinked'];
                 final fullyUnlinkedBatches = snapshot.data!['fully_unlinked'];
@@ -346,8 +329,16 @@ class _RequestsPageState extends State<RequestsPage> {
                                   color: Colors.blueAccent),
                             ),
                             const SizedBox(height: 10),
-                            ...activeBatches.map((batch) => buildDataBlock(batch)),
-                            buildSummary(activeTotalRolls, activeTotalWeight),
+                            SizedBox(
+                              height: 200,
+                              child: ListView.builder(
+                                itemCount: activeBatches.length,
+                                itemBuilder: (context, index) {
+                                  return buildDataBlock(activeBatches[index]);
+                                },
+                              ),
+                            ),
+                            buildSummary(activeTotalWeight),
                           ],
                         ),
                       ),
@@ -371,7 +362,15 @@ class _RequestsPageState extends State<RequestsPage> {
                                   color: Colors.orangeAccent),
                             ),
                             const SizedBox(height: 10),
-                            ...partiallyUnlinkedBatches.map((batch) => buildSimpleDataBlock(batch)),
+                            SizedBox(
+                              height: 150,
+                              child: ListView.builder(
+                                itemCount: partiallyUnlinkedBatches.length,
+                                itemBuilder: (context, index) {
+                                  return buildSimpleDataBlock(partiallyUnlinkedBatches[index]);
+                                },
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -395,7 +394,15 @@ class _RequestsPageState extends State<RequestsPage> {
                                   color: Colors.green),
                             ),
                             const SizedBox(height: 10),
-                            ...fullyUnlinkedBatches.map((batch) => buildSimpleDataBlock(batch)),
+                            SizedBox(
+                              height: 150,
+                              child: ListView.builder(
+                                itemCount: fullyUnlinkedBatches.length,
+                                itemBuilder: (context, index) {
+                                  return buildSimpleDataBlock(fullyUnlinkedBatches[index]);
+                                },
+                              ),
+                            ),
                           ],
                         ),
                       ),
